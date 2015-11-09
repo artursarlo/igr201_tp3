@@ -17,7 +17,11 @@
 
 using namespace std;
 
-// Texture Parameters 
+// Light Parameters
+static int light0En = 1;
+static int light1En = 1;
+
+// Texture Parameters
 #define TEXT_HEIGHT 8
 #define TEXT_WIDTH 8
 // Buffer to store the texture
@@ -64,7 +68,7 @@ static int mouseClicked = 0;
 
 /**
  * Convert polar notation (degres) to cartesian notation.
- * 
+ *
  * @param phi Adjacent angle to y-axe
  * @param theta Adjacent angle to z-axe
  * @param d Distance from the origin
@@ -80,11 +84,11 @@ void polar2Cartesian (float phi,
 		      float &y,
 		      float &z
 		      ){
-  
+
   // Conversion from degres to radian
   float radian_phi = phi* 3.14f / 180.0f;
   float radian_theta = theta* 3.14f / 180.0f;
-  
+
   // If we had a coordinates system like we usually draw at math courses
   // x = d*sin(radian_phi)*cos(radian_theta);
   // y = d*sin(radian_phi)*sin(radian_theta);
@@ -106,20 +110,20 @@ void printUsage () {
 	    << appTitle << std::endl
 	    << "Author : Tamy Boubekeur" << std::endl << std::endl
 	    << "Usage : ./main [<file.off>]" << std::endl
-	    << "Cammandes clavier :" << std::endl 
+	    << "Cammandes clavier :" << std::endl
 	    << "------------------" << std::endl
 	    << " ?: Print help" << std::endl
 	    << " w: Toggle wireframe mode" << std::endl
-	    << " <drag>+<left button>: rotate model" << std::endl 
+	    << " <drag>+<left button>: rotate model" << std::endl
 	    << " <drag>+<right button>: move model" << std::endl
 	    << " <drag>+<middle button>: zoom" << std::endl
-	    << " q, <esc>: Quit" << std::endl << std::endl; 
+	    << " q, <esc>: Quit" << std::endl << std::endl;
 }
 
 /**
  * Fill a texture buffer of unsigned chars with a white/blue checkerboard.
  * The buffer size must be width*height*3.
- * 
+ *
  * @param width Width of the texture buffer
  * @param height Height of the texture buffer
  * @param *image Pointer to the texture buffer
@@ -129,7 +133,7 @@ void genCheckerboard (unsigned int width,
 		      unsigned int height,
 		      unsigned char *image
 		      ){
-  
+
   for (unsigned int y=0; y<height; y++){
     for (unsigned int x=0; x<width*3; x+=3){
       if (((y <= height/2) && (x <= width*3/2)) || ((y > height/2) && (x > width*3/2))){
@@ -191,7 +195,7 @@ void init () {
 
   // Fill texture image
   genCheckerboard(TEXT_WIDTH, TEXT_HEIGHT, image);
-    
+
   // Texture Parameters
   glEnable (GL_TEXTURE_2D);
   glGenTextures (1, &texture);
@@ -200,10 +204,10 @@ void init () {
   glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    
+
   // Fill the texture with the information contained at the txture buffer
   glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, TEXT_WIDTH, TEXT_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-    
+
   // Camera initialization
   fovAngle = 45.f;
   nearPlane = 0.01;
@@ -248,7 +252,7 @@ void setupCamera () {
 /**
  * Function to be called many times inside motion  function.
  * Update the polar coordinates of the camera based on the passed offsets.
- * 
+ *
  * @param deltaX Offset representing the mouse movement at the x-axe
  * @param deltaY Offset representing the mouse movement at the y-axe
  * @return void
@@ -268,7 +272,7 @@ void updateCamera (float deltaX, float deltaY){
     thetaci = 0.0f;
   else
     thetaci += deltaX;
-} 
+}
 
 void reshape (int w, int h) {
   screenWidth = w;
@@ -280,7 +284,7 @@ void reshape (int w, int h) {
 
 /**
  * Draw a sphere based in the passed coordinates.
- * 
+ *
  * @param x_center Cartesian coordiante of the sphere center at the x-axe
  * @param y_center Cartesian coordiante of the sphere center at the y-axe
  * @param z_center Cartesian coordiante of the sphere center at the z-axe
@@ -288,35 +292,35 @@ void reshape (int w, int h) {
  * @return void
  */
 void glSphere(float x_center, float y_center, float z_center, float radius){
-  
+
   glMatrixMode (GL_MODELVIEW);
   glPushMatrix ();
   glTranslatef (x_center, y_center, z_center);
-  
+
   glBegin (GL_TRIANGLES);
   float x,y,z;
   float x1,y1,z1;
   float x2,y2,z2;
   float x3,y3,z3;
   float step = 10;
-    
+
   for (int phi =0; phi<180; phi+=step){
     for(int theta=0; theta<360; theta+=step){
       polar2Cartesian(phi, theta, radius, x, y, z);
       polar2Cartesian(phi, theta+ step, radius, x1, y1, z1);
       polar2Cartesian(phi +step, theta +step, radius, x2, y2, z2);
       polar2Cartesian(phi + step, theta, radius, x3, y3, z3);
-	
+
       // glColor3f(x, y, z);
       glTexCoord2f(0.0, 1.0f);
       glNormal3f(x, y, z);
       glVertex3f(x,y ,z);
-	
+
       // glColor3f(x1, y1, z1);
       glTexCoord2f(1.0f, 1.0f);
       glNormal3f(x1, y1, z1);
       glVertex3f(x1, y1, z1);
-	
+
       // glColor3f(x2, y2, z2);
       glTexCoord2f(1.0f, 0.0f);
       glNormal3f(x2, y2, z2);
@@ -326,12 +330,12 @@ void glSphere(float x_center, float y_center, float z_center, float radius){
       glTexCoord2f(0.0f, 1.0f);
       glNormal3f(x, y, z);
       glVertex3f(x, y, z);
-	
+
       // glColor3f(x2, y2, z2);
       glTexCoord2f(1.0f, 0.0f);
       glNormal3f(x2, y2, z2);
       glVertex3f(x2, y2, z2);
-	
+
       // glColor3f(x3, y3, z3);
       glTexCoord2f(0.0f, 0.0f);
       glNormal3f(x3, y3, z3);
@@ -345,15 +349,15 @@ void glSphere(float x_center, float y_center, float z_center, float radius){
 
 /**
  * Draw a colored sphere based in the passed coordinates/parameters.
- * 
+ *
  * @param x Cartesian coordiante of the sphere center at the x-axe
  * @param y Cartesian coordiante of the sphere center at the y-axe
  * @param z Cartesian coordiante of the sphere center at the z-axe
  * @param r Radius of the sphere
- * @param difR Diffuse RED reflectance of the sphere (0.0f - 1.0f) 
+ * @param difR Diffuse RED reflectance of the sphere (0.0f - 1.0f)
  * @param difG Diffuse GREEN reflectance of the sphere (0.0f - 1.0f)
  * @param difB Diffuse BLUE reflectance of the sphere (0.0f - 1.0f)
- * @param specR Specular RED reflectance of the sphere (0.0f - 1.0f) 
+ * @param specR Specular RED reflectance of the sphere (0.0f - 1.0f)
  * @param specG Specular GREEN reflectance of the sphere (0.0f - 1.0f)
  * @param specB Specular BLUE reflectance of the sphere (0.0f - 1.0f)
  * @param shininess Shininess of the sphere (0.0f - 1.0f)
@@ -379,14 +383,14 @@ void glSphereWithMat(float x,
 
   // Set the texture defined at init() to this drawing
   glBindTexture (GL_TEXTURE_2D, texture);
-  
+
   glSphere(x, y, z, r);
-  
+
 }
 
 /**
  * Draw a pyramid of 14 normal spheres with the given radius
- * 
+ *
  * @param radius Radius of the spheres
  * @return void
  */
@@ -407,7 +411,7 @@ void glPyramid(float radius){
 
 /**
  * Draw a pyramid of 14 colored spheres with the given radius
- * 
+ *
  * @param radius Radius of the spheres
  * @return void
  */
@@ -426,7 +430,7 @@ void glPyramidWithMat(float radius){
 
 /**
  * Callback funtion to refresh the display.
- * 
+ *
  * @return void
  */
 void display () {
@@ -434,7 +438,7 @@ void display () {
   // Erase the color and z buffers.
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // Static 3D examples 
+  // Static 3D examples
   // glSphere(0.0f, 0.0f, 0.0f, 1.0f);
   // glPyramid(1.0f);
   // glSphereWithMat(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -442,27 +446,27 @@ void display () {
   // glSphere(sin(angle), cos(angle), 0.0f, 1.0f);
 
   // Animation example: Orbit of ugly planets
-  float deltaT = (currentTime- beforeTime); 
+  float deltaT = (currentTime- beforeTime);
   speed += deltaT*acceleration/100.0;
   if (speed >= 10.0f)
     speed = 10.0f;
   else if (speed <= -10.0f)
     speed = -10.0f;
   angle += (deltaT*speed)*(3.14/180.0)/100.0;
-  
+
   glSphere(3*cos(0.7*angle), 0.0f, 3*sin(0.7*angle), 0.2f);
   glSphere(2*sin(0.5*angle), 0.0f, 2*cos(0.5*angle), 0.1f);
   glSphere(sin(angle), 0.0f, cos(angle), 0.5f);
-  
+
   beforeTime = currentTime;
-    
+
   glFlush (); // Ensures any previous OpenGL call has been executed
   glutSwapBuffers ();  // swap the render buffer and the displayed (screen) one
 }
 
 /**
  * Make something at a button press event
- * 
+ *
  * @param keypressed The keyboard entry that generated the event
  * @param x
  * @param y
@@ -475,11 +479,31 @@ void keyboard (unsigned char keyPressed, int x, int y) {
     glGetIntegerv (GL_POLYGON_MODE, mode);
     glPolygonMode (GL_FRONT_AND_BACK, mode[1] ==  GL_FILL ? GL_LINE : GL_FILL);
     break;
+  case '0':
+    if(light0En){
+      glDisable(GL_LIGHT0);
+      light0En = 0;
+    }
+    else{
+      glEnable(GL_LIGHT0);
+      light0En = 1;
+    }
+    break;
+  case '1':
+    if(light1En){
+      glDisable(GL_LIGHT1);
+      light1En = 0;
+    }
+    else{
+      glEnable(GL_LIGHT1);
+      light1En = 1;
+    }
+    break;
   case '+':
     acceleration = 1.0f;
     break;
   case '-':
-    acceleration = -1.f;
+    acceleration = -1.0f;
     break;
   case 'q':
   case 27:
@@ -494,7 +518,7 @@ void keyboard (unsigned char keyPressed, int x, int y) {
 
 /**
  * Make something at a mouse button press event
- * 
+ *
  * @param button Indicates wich button has been pressed
  * @param x Position of the event at the x-axe
  * @param y Position of the event at the y-axe
@@ -516,7 +540,7 @@ void mouse (int button, int state, int x, int y) {
 
 /**
  * Make something at a mouse mouvement event
- * 
+ *
  * @param x Position of the event at the x-axe
  * @param y Position of the event at the y-axe
  * @return void
@@ -542,7 +566,7 @@ void idle () {
   glutPostRedisplay();
 
   currentTime = glutGet((GLenum)GLUT_ELAPSED_TIME);
-  
+
 }
 
 int main (int argc, char ** argv) {
@@ -564,14 +588,14 @@ int main (int argc, char ** argv) {
   glutDisplayFunc (display);
   // Callback function executed when the keyboard is used
   glutKeyboardFunc (keyboard);
-  // Callback function executed when a mouse button is clicked 
+  // Callback function executed when a mouse button is clicked
   glutMouseFunc (mouse);
   // Callback function executed when the mouse move
   glutMotionFunc (motion);
   // Callback function executed continuously when no other event happens
   // (good for background procesing or animation for instance).
   glutIdleFunc (idle);
-  // By default, display the usage help of the program   
+  // By default, display the usage help of the program
   printUsage ();
   glutMainLoop ();
   return 0;
